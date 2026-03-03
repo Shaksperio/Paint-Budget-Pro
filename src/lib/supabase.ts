@@ -9,8 +9,38 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: { persistSession: false }
 });
 
+type SyncResult = {
+  ok: boolean;
+  message: string;
+  hardFailure: boolean;
+};
+
+function mapSupabaseError(error: unknown): SyncResult {
+  const msg = String((error as { message?: string })?.message || error || 'erro desconhecido').toLowerCase();
+  const nonBlockingPatterns = ['jwt', 'permission', 'rls', 'relation', 'not found', 'failed to fetch'];
+  const isNonBlocking = nonBlockingPatterns.some((pattern) => msg.includes(pattern));
+
+  return {
+    ok: false,
+    hardFailure: !isNonBlocking,
+    message: isNonBlocking
+      ? 'Sincronização remota indisponível no momento. Dados salvos localmente.'
+      : 'Falha inesperada na sincronização remota.'
+  };
+}
+
+async function safeUpsert(table: string, payload: Record<string, unknown>): Promise<SyncResult> {
+  try {
+    const { error } = await supabase.from(table).upsert(payload);
+    if (error) return mapSupabaseError(error);
+    return { ok: true, message: 'Sincronizado com Supabase', hardFailure: false };
+  } catch (error) {
+    return mapSupabaseError(error);
+  }
+}
+
 export async function upsertBudgetRemote(budget: BudgetData) {
-  return supabase.from('budgets').upsert({
+  return safeUpsert('budgets', {
     id: budget.id,
     numero: budget.numero,
     criado_em: budget.criadoEm,
@@ -27,7 +57,7 @@ export async function upsertBudgetRemote(budget: BudgetData) {
 }
 
 export async function upsertProductRemote(product: Product) {
-  return supabase.from('products').upsert({
+  return safeUpsert('products', {
     id: product.id,
     nome: product.nome,
     marca: product.marca,
@@ -38,7 +68,7 @@ export async function upsertProductRemote(product: Product) {
 }
 
 export async function upsertServiceRemote(service: Service) {
-  return supabase.from('services').upsert({
+  return safeUpsert('services', {
     id: service.id,
     nome: service.nome,
     categoria: service.categoria,
@@ -49,7 +79,7 @@ export async function upsertServiceRemote(service: Service) {
 }
 
 export async function upsertProfessionalRemote(professional: Professional) {
-  return supabase.from('professionals').upsert({
+  return safeUpsert('professionals', {
     id: professional.id,
     nome: professional.nome,
     telefone: professional.telefone,

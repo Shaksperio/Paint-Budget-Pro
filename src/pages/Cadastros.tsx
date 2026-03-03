@@ -39,7 +39,7 @@ export function Cadastros() {
     const product = { id: crypto.randomUUID(), ...productForm, preco: Number(productForm.preco) };
     await db.products.add(product);
     const remote = await upsertProductRemote(product);
-    setSyncFeedback(remote.error ? 'Produto salvo localmente (erro Supabase).' : 'Produto salvo e sincronizado.');
+    setSyncFeedback(remote.message);
     setProductForm({ nome: '', marca: '', tipo: 'Tinta Acrílica', unidade: 'litro', preco: 0 });
     refetchProducts();
   }
@@ -49,7 +49,7 @@ export function Cadastros() {
     const service = { id: crypto.randomUUID(), ...serviceForm, precoBase: Number(serviceForm.precoBase) };
     await db.services.add(service);
     const remote = await upsertServiceRemote(service);
-    setSyncFeedback(remote.error ? 'Serviço salvo localmente (erro Supabase).' : 'Serviço salvo e sincronizado.');
+    setSyncFeedback(remote.message);
     setServiceForm({ nome: '', precoBase: 0, tempoEstimado: '', descricao: '', categoria: 'pintura' });
     refetchServices();
   }
@@ -59,7 +59,7 @@ export function Cadastros() {
     const professional = { id: crypto.randomUUID(), ...professionalForm, valorHora: Number(professionalForm.valorHora) };
     await db.professionals.add(professional);
     const remote = await upsertProfessionalRemote(professional);
-    setSyncFeedback(remote.error ? 'Profissional salvo localmente (erro Supabase).' : 'Profissional salvo e sincronizado.');
+    setSyncFeedback(remote.message);
     setProfessionalForm({ nome: '', telefone: '', email: '', especialidade: 'Pintor', valorHora: 0 });
     refetchProfessionals();
   }

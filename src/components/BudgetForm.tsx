@@ -40,7 +40,7 @@ export function BudgetForm() {
     const timer = setTimeout(async () => {
       await db.budgets.put(budget);
       const response = await upsertBudgetRemote(budget);
-      setSyncState(response.error ? 'Erro ao sincronizar com Supabase' : 'Sincronizado com Supabase');
+      setSyncState(response.message);
     }, 350);
     return () => clearTimeout(timer);
   }, [budget]);
