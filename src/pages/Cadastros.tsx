@@ -1,24 +1,28 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { db } from '../lib/db';
 import { upsertProductRemote, upsertProfessionalRemote, upsertServiceRemote } from '../lib/supabase';
-
-const sinapiCatalog = [
-  { nome: 'Pintura acrílica em parede interna', categoria: 'pintura', precoBase: 32 },
-  { nome: 'Pintura externa com selador', categoria: 'pintura', precoBase: 45 },
-  { nome: 'Impermeabilização com manta asfáltica', categoria: 'impermeabilizacao', precoBase: 68 }
-] as const;
+import { searchLeroy, searchSinapi } from '../lib/search/externalSearch';
+import type { LeroyProductResult, SinapiCategory, SinapiServiceResult } from '../lib/search/types';
 
 export function Cadastros() {
   const [searchParams] = useSearchParams();
   const [tab, setTab] = useState(searchParams.get('tab') || 'produtos');
+  const [syncFeedback, setSyncFeedback] = useState('');
+
+  const [leroyTerm, setLeroyTerm] = useState('');
+  const [leroyResults, setLeroyResults] = useState<LeroyProductResult[]>([]);
+  const [sinapiMode, setSinapiMode] = useState<'manual' | 'sinapi'>('manual');
+  const [sinapiQuery, setSinapiQuery] = useState('');
+  const [sinapiCategory, setSinapiCategory] = useState<SinapiCategory>('todos');
+  const [sinapiResults, setSinapiResults] = useState<SinapiServiceResult[]>([]);
+  const [sinapiCacheInfo, setSinapiCacheInfo] = useState('');
 
   useEffect(() => {
     const fromQuery = searchParams.get('tab');
     if (fromQuery) setTab(fromQuery);
   }, [searchParams]);
-  const [syncFeedback, setSyncFeedback] = useState('');
 
   const { data: products = [], refetch: refetchProducts } = useQuery({ queryKey: ['products'], queryFn: () => db.products.toArray() });
   const { data: services = [], refetch: refetchServices } = useQuery({ queryKey: ['services'], queryFn: () => db.services.toArray() });
@@ -26,20 +30,9 @@ export function Cadastros() {
 
   const [productForm, setProductForm] = useState({ nome: '', marca: '', tipo: 'Tinta Acrílica', unidade: 'litro', preco: 0 });
   const [serviceForm, setServiceForm] = useState<{ nome: string; precoBase: number; tempoEstimado: string; descricao: string; categoria: 'pintura' | 'impermeabilizacao' }>({
-    nome: '',
-    precoBase: 0,
-    tempoEstimado: '',
-    descricao: '',
-    categoria: 'pintura'
+    nome: '', precoBase: 0, tempoEstimado: '', descricao: '', categoria: 'pintura'
   });
   const [professionalForm, setProfessionalForm] = useState({ nome: '', telefone: '', email: '', especialidade: 'Pintor', valorHora: 0 });
-  const [sinapiMode, setSinapiMode] = useState<'manual' | 'sinapi'>('manual');
-  const [sinapiQuery, setSinapiQuery] = useState('');
-
-  const sinapiResult = useMemo(
-    () => sinapiCatalog.filter((item) => item.nome.toLowerCase().includes(sinapiQuery.toLowerCase())),
-    [sinapiQuery]
-  );
 
   async function addProduct(event: FormEvent) {
     event.preventDefault();
@@ -71,6 +64,46 @@ export function Cadastros() {
     refetchProfessionals();
   }
 
+  async function handleLeroySearch() {
+    const response = await searchLeroy(leroyTerm);
+    setLeroyResults(response.data);
+    setSyncFeedback(response.source === 'remote' ? 'Busca Leroy concluída.' : 'Busca Leroy com fallback/sem resultado remoto.');
+  }
+
+  async function handleSinapiSearch() {
+    const response = await searchSinapi(sinapiQuery, sinapiCategory);
+    setSinapiResults(response.data);
+    setSinapiCacheInfo(response.source === 'cache' ? 'Resultados do cache (30 min).' : response.source === 'remote' ? 'Resultados atualizados da busca externa.' : 'Resultados de fallback da base interna.');
+  }
+
+  async function useLeroyProduct(item: LeroyProductResult) {
+    const product = {
+      id: crypto.randomUUID(),
+      nome: item.nome,
+      marca: item.marca,
+      preco: item.preco,
+      unidade: 'un',
+      tipo: item.tipo
+    };
+    await db.products.add(product);
+    await upsertProductRemote(product);
+    refetchProducts();
+  }
+
+  async function useSinapiService(item: SinapiServiceResult) {
+    const service = {
+      id: crypto.randomUUID(),
+      nome: `[SINAPI ${item.codigo}] ${item.descricao}`,
+      categoria: item.categoria,
+      precoBase: item.preco,
+      tempoEstimado: '',
+      descricao: `Unidade: ${item.unidade}`
+    } as const;
+    await db.services.add(service);
+    await upsertServiceRemote(service);
+    refetchServices();
+  }
+
   return (
     <section className="card">
       <h2>Cadastros</h2>
@@ -84,6 +117,22 @@ export function Cadastros() {
       {tab === 'produtos' ? (
         <div className="card soft">
           <h3>📦 Cadastro de Produtos</h3>
+          <div className="card tint">
+            <h4>Buscar na Leroy Merlin</h4>
+            <div className="row">
+              <input placeholder="Digite o nome do produto..." value={leroyTerm} onChange={(e) => setLeroyTerm(e.target.value)} />
+              <button className="btn btn-accent" onClick={handleLeroySearch}>🔎 Buscar</button>
+            </div>
+            <div className="stack">
+              {leroyResults.map((item) => (
+                <button key={item.sku} className="history-item" onClick={() => useLeroyProduct(item)}>
+                  <strong>{item.nome}</strong>
+                  <span>{item.marca} • R$ {item.preco.toFixed(2)} • SKU {item.sku}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <form className="form-grid" onSubmit={addProduct}>
             <input placeholder="Nome do Produto" value={productForm.nome} onChange={(e) => setProductForm((s) => ({ ...s, nome: e.target.value }))} required />
             <input placeholder="Marca" value={productForm.marca} onChange={(e) => setProductForm((s) => ({ ...s, marca: e.target.value }))} required />
@@ -119,14 +168,23 @@ export function Cadastros() {
             <div className="card tint">
               <h4>Buscar Preços SINAPI</h4>
               <input placeholder="Ex: pintura acrílica, manta asfáltica..." value={sinapiQuery} onChange={(e) => setSinapiQuery(e.target.value)} />
+              <div className="row">
+                <select value={sinapiCategory} onChange={(e) => setSinapiCategory(e.target.value as SinapiCategory)}>
+                  <option value="todos">Todas</option>
+                  <option value="pintura">Pintura</option>
+                  <option value="impermeabilizacao">Impermeabilização</option>
+                </select>
+                <button className="btn btn-accent" onClick={handleSinapiSearch}>🔎 Buscar</button>
+              </div>
+              {sinapiCacheInfo ? <p className="muted">{sinapiCacheInfo}</p> : null}
               <div className="stack">
-                {sinapiResult.map((item) => (
-                  <button key={item.nome} className="history-item" onClick={() => setServiceForm((s) => ({ ...s, nome: item.nome, categoria: item.categoria, precoBase: item.precoBase }))}>
-                    <strong>{item.nome}</strong>
-                    <span>Preço referência: R$ {item.precoBase.toFixed(2)} / m²</span>
+                {sinapiResults.map((item) => (
+                  <button key={`${item.codigo}-${item.descricao}`} className="history-item" onClick={() => useSinapiService(item)}>
+                    <strong>[SINAPI {item.codigo}] {item.descricao}</strong>
+                    <span>{item.categoria} • R$ {item.preco.toFixed(2)} / {item.unidade} • fonte: {item.fonte}</span>
                   </button>
                 ))}
-                {sinapiResult.length === 0 ? <p className="muted">Nenhum resultado no catálogo local de referência.</p> : null}
+                {sinapiResults.length === 0 ? <p className="muted">Nenhum resultado. Tente outro termo.</p> : null}
               </div>
             </div>
           )}

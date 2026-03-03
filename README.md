@@ -50,3 +50,24 @@ As tabelas esperadas no banco são:
 npm install
 npm run dev
 ```
+
+
+## Buscadores externos implementados
+
+- `supabase/functions/search-leroy/index.ts`: busca produtos na API da Leroy com fallback para catálogo simulado.
+- `supabase/functions/search-sinapi/index.ts`: busca serviços SINAPI via Firecrawl (quando disponível), com fallback para base interna de referência.
+- `src/lib/search/externalSearch.ts`: integração do frontend com as Edge Functions e cache local (TTL de 30 minutos) para resultados de preços.
+
+### Testar busca SINAPI
+
+1. Abra **Cadastros → Serviços → Buscar SINAPI**.
+2. Busque por termos como `pintura`, `selador` ou `manta`.
+3. O app exibirá se veio de cache, busca remota ou fallback interno.
+
+## Testes
+
+```bash
+npm run test
+npm run check
+npm run build
+```
