@@ -34,12 +34,18 @@ export function Cadastros() {
   });
   const [professionalForm, setProfessionalForm] = useState({ nome: '', telefone: '', email: '', especialidade: 'Pintor', valorHora: 0 });
 
+  function feedback(entity: string, remoteMessage: string) {
+    if (remoteMessage === 'Sincronizado com Supabase') return `${entity} salvo e sincronizado.`;
+    if (remoteMessage.includes('Dados salvos localmente')) return `${entity} salvo localmente. Sincronização remota indisponível.`;
+    return `${entity} salvo localmente. A sincronização remota será tentada novamente.`;
+  }
+
   async function addProduct(event: FormEvent) {
     event.preventDefault();
     const product = { id: crypto.randomUUID(), ...productForm, preco: Number(productForm.preco) };
     await db.products.add(product);
     const remote = await upsertProductRemote(product);
-    setSyncFeedback(remote.message);
+    setSyncFeedback(feedback('Produto', remote.message));
     setProductForm({ nome: '', marca: '', tipo: 'Tinta Acrílica', unidade: 'litro', preco: 0 });
     refetchProducts();
   }
@@ -49,7 +55,7 @@ export function Cadastros() {
     const service = { id: crypto.randomUUID(), ...serviceForm, precoBase: Number(serviceForm.precoBase) };
     await db.services.add(service);
     const remote = await upsertServiceRemote(service);
-    setSyncFeedback(remote.message);
+    setSyncFeedback(feedback('Serviço', remote.message));
     setServiceForm({ nome: '', precoBase: 0, tempoEstimado: '', descricao: '', categoria: 'pintura' });
     refetchServices();
   }
@@ -59,7 +65,7 @@ export function Cadastros() {
     const professional = { id: crypto.randomUUID(), ...professionalForm, valorHora: Number(professionalForm.valorHora) };
     await db.professionals.add(professional);
     const remote = await upsertProfessionalRemote(professional);
-    setSyncFeedback(remote.message);
+    setSyncFeedback(feedback('Profissional', remote.message));
     setProfessionalForm({ nome: '', telefone: '', email: '', especialidade: 'Pintor', valorHora: 0 });
     refetchProfessionals();
   }
@@ -86,7 +92,8 @@ export function Cadastros() {
       tipo: item.tipo
     };
     await db.products.add(product);
-    await upsertProductRemote(product);
+    const remote = await upsertProductRemote(product);
+    setSyncFeedback(feedback('Produto', remote.message));
     refetchProducts();
   }
 
@@ -100,7 +107,8 @@ export function Cadastros() {
       descricao: `Unidade: ${item.unidade}`
     } as const;
     await db.services.add(service);
-    await upsertServiceRemote(service);
+    const remote = await upsertServiceRemote(service);
+    setSyncFeedback(feedback('Serviço', remote.message));
     refetchServices();
   }
 
