@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import type { BudgetData, Product, Professional, Service } from '../types/budget';
 
-const SUPABASE_URL = 'https://qkiezzceglavdilvuxro.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_-lVpJTqi1VISEK8BBFLyrw_NqXScRRV';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://jnabeytsbxefzrnflwad.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_-yT5Tj1k1qplV5dJGvMeOA_6IwrG5P8';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: { persistSession: false }

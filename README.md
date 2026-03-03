@@ -16,10 +16,24 @@ Aplicativo SPA para orçamento de pintura/impermeabilização com interface mobi
 
 ## Supabase
 
-Este projeto já está configurado para usar:
+Este projeto está configurado para o projeto:
 
-- URL: `https://qkiezzceglavdilvuxro.supabase.co`
-- Publishable Key: `sb_publishable_-lVpJTqi1VISEK8BBFLyrw_NqXScRRV`
+- Project name: `supabase-coral-fence`
+- Project ID: `jnabeytsbxefzrnflwad`
+- URL: `https://jnabeytsbxefzrnflwad.supabase.co`
+
+As variáveis públicas usadas no front-end são:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+> ⚠️ **Não use `sb_secret_*` no front-end.** A chave secreta deve ficar apenas em backend/edge functions.
+
+### Configuração local
+
+1. Copie `.env.example` para `.env`.
+2. Ajuste valores se necessário.
+3. Execute o app.
 
 As tabelas esperadas no banco são:
 
