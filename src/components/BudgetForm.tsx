@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { db } from '../lib/db';
 import { cepLookup } from '../lib/cepLookup';
@@ -28,6 +28,9 @@ export function BudgetForm() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [history, setHistory] = useState<BudgetData[]>([]);
   const [syncState, setSyncState] = useState('Sincronização pendente');
+  const [servicePhotos, setServicePhotos] = useState<string[]>([]);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const photosInputRef = useRef<HTMLInputElement>(null);
 
   const subtotal = useMemo(
     () => budget.itens.reduce((acc, item) => acc + item.areaM2 * item.demaos * item.precoM2, 0),
@@ -56,24 +59,49 @@ export function BudgetForm() {
     if (endereco) setBudget((prev) => ({ ...prev, client: { ...prev.client, endereco } }));
   }
 
+  function uploadLogo(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setBudget((prev) => ({ ...prev, company: { ...prev.company, logo: String(reader.result || '') } }));
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function uploadServicePhotos(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files || []);
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setServicePhotos((prev) => [...prev, String(reader.result || '')]);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
   return (
     <div className="budget-page">
       <div className="actions-bar">
-        <button className="btn btn-primary" onClick={() => exportBudgetPdf(budget, total)}>📄 Gerar PDF</button>
-        <button className="btn" onClick={() => window.print()}>🖨 Imprimir</button>
-        <button className="btn" onClick={() => setBudget(emptyBudget())}>➕ Novo Orçamento</button>
-        <button className="btn" onClick={openHistory}>🕒 Histórico</button>
+        <button type="button" className="btn btn-primary" onClick={() => exportBudgetPdf(budget, total)}>📄 Gerar PDF</button>
+        <button type="button" className="btn" onClick={() => window.print()}>🖨 Imprimir</button>
+        <button type="button" className="btn" onClick={() => setBudget(emptyBudget())}>➕ Novo Orçamento</button>
+        <button type="button" className="btn" onClick={openHistory}>🕒 Histórico</button>
         <span className="sync-pill">{syncState}</span>
       </div>
 
       <section className="hero-company">
-        <div className="logo-box">LOGO</div>
+        <button type="button" className="logo-box logo-button" onClick={() => logoInputRef.current?.click()}>
+          {budget.company.logo ? <img src={budget.company.logo} alt="Logo da empresa" className="logo-image" /> : 'LOGO'}
+        </button>
+        <input ref={logoInputRef} type="file" accept="image/*" className="hidden-input" onChange={uploadLogo} />
         <div>
           <h2>{budget.company.nome}</h2>
           <div className="hero-fields">
             <input value={budget.company.telefone} onChange={(e) => setBudget((p) => ({ ...p, company: { ...p.company, telefone: e.target.value } }))} placeholder="Telefone" />
             <input value={budget.company.email} onChange={(e) => setBudget((p) => ({ ...p, company: { ...p.company, email: e.target.value } }))} placeholder="Email" />
           </div>
+          <small className="hero-helper">Toque na logo para enviar imagem.</small>
         </div>
       </section>
 
@@ -99,7 +127,7 @@ export function BudgetForm() {
 
       <section className="card">
         <h3>🧾 Itens do Orçamento</h3>
-        <button className="btn btn-accent" onClick={() => setBudget((p) => ({ ...p, itens: [...p.itens, { id: crypto.randomUUID(), descricao: '', areaM2: 0, tipoTinta: '', demaos: 1, precoM2: 0 }] }))}>+ Adicionar Item</button>
+        <button type="button" className="btn btn-accent" onClick={() => setBudget((p) => ({ ...p, itens: [...p.itens, { id: crypto.randomUUID(), descricao: '', areaM2: 0, tipoTinta: '', demaos: 1, precoM2: 0 }] }))}>+ Adicionar Item</button>
         <div className="table-scroll">
           <table>
             <thead><tr><th>Descrição</th><th>Área (m²)</th><th>Tipo de Tinta</th><th>Demãos</th><th>Preço/m²</th><th>Total</th></tr></thead>
@@ -132,8 +160,12 @@ export function BudgetForm() {
 
       <section className="card">
         <h3>📷 Fotos do Serviço (Antes)</h3>
-        <button className="btn btn-accent">📸 Adicionar Fotos</button>
-        <p className="muted">Nenhuma foto adicionada.</p>
+        <button type="button" className="btn btn-accent" onClick={() => photosInputRef.current?.click()}>📸 Adicionar Fotos</button>
+        <input ref={photosInputRef} type="file" multiple accept="image/*" className="hidden-input" onChange={uploadServicePhotos} />
+        {servicePhotos.length === 0 ? <p className="muted">Nenhuma foto adicionada.</p> : null}
+        <div className="photo-grid">
+          {servicePhotos.map((photo, index) => <img key={`${photo.slice(0, 20)}-${index}`} src={photo} alt={`Foto do serviço ${index + 1}`} className="service-photo" />)}
+        </div>
       </section>
 
       <section className="card">

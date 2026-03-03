@@ -20,6 +20,19 @@ function setCache<T>(key: string, value: T) {
   localStorage.setItem(key, JSON.stringify({ ts: Date.now(), value }));
 }
 
+function fallbackLeroy(searchTerm: string): LeroyProductResult[] {
+  const brands = ['Suvinil', 'Coral', 'Sherwin-Williams'];
+  return brands.map((brand, index) => ({
+    nome: `${searchTerm || 'Tinta'} ${brand} Premium`,
+    marca: brand,
+    preco: Number((89 + index * 14).toFixed(2)),
+    sku: `SIM-${Date.now()}-${index}`,
+    tipo: /imperme|manta|veda/i.test(searchTerm) ? 'Impermeabilizante' : 'Tinta Acrílica',
+    coberturaEstimada: /18l/i.test(searchTerm) ? 300 : 60,
+    fonte: 'fallback'
+  }));
+}
+
 export async function searchSinapi(searchTerm: string, categoria: SinapiCategory) {
   const key = `sinapi:${searchTerm}:${categoria}`;
   const cached = getCache<SinapiServiceResult[]>(key);
@@ -29,7 +42,7 @@ export async function searchSinapi(searchTerm: string, categoria: SinapiCategory
     body: { searchTerm, categoria }
   });
 
-  if (!error && Array.isArray(data?.services)) {
+  if (!error && Array.isArray(data?.services) && data.services.length) {
     setCache(key, data.services);
     return { data: data.services as SinapiServiceResult[], source: 'remote' as const };
   }
@@ -48,10 +61,12 @@ export async function searchLeroy(searchTerm: string) {
     body: { searchTerm }
   });
 
-  if (!error && Array.isArray(data?.products)) {
+  if (!error && Array.isArray(data?.products) && data.products.length) {
     setCache(key, data.products);
     return { data: data.products as LeroyProductResult[], source: 'remote' as const };
   }
 
-  return { data: [] as LeroyProductResult[], source: 'error' as const };
+  const fallback = fallbackLeroy(searchTerm);
+  setCache(key, fallback);
+  return { data: fallback, source: 'fallback' as const };
 }

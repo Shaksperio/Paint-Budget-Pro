@@ -116,9 +116,9 @@ export function Cadastros() {
     <section className="card">
       <h2>Cadastros</h2>
       <div className="row">
-        <button className={`btn ${tab === 'produtos' ? 'btn-primary' : ''}`} onClick={() => setTab('produtos')}>📦 Produtos</button>
-        <button className={`btn ${tab === 'servicos' ? 'btn-primary' : ''}`} onClick={() => setTab('servicos')}>🛠 Serviços</button>
-        <button className={`btn ${tab === 'profissionais' ? 'btn-primary' : ''}`} onClick={() => setTab('profissionais')}>👥 Profissionais</button>
+        <button type="button" className={`btn ${tab === 'produtos' ? 'btn-primary' : ''}`} onClick={() => setTab('produtos')}>📦 Produtos</button>
+        <button type="button" className={`btn ${tab === 'servicos' ? 'btn-primary' : ''}`} onClick={() => setTab('servicos')}>🛠 Serviços</button>
+        <button type="button" className={`btn ${tab === 'profissionais' ? 'btn-primary' : ''}`} onClick={() => setTab('profissionais')}>👥 Profissionais</button>
       </div>
       {syncFeedback ? <p className="muted">{syncFeedback}</p> : null}
 
@@ -129,11 +129,11 @@ export function Cadastros() {
             <h4>Buscar na Leroy Merlin</h4>
             <div className="row">
               <input placeholder="Digite o nome do produto..." value={leroyTerm} onChange={(e) => setLeroyTerm(e.target.value)} />
-              <button className="btn btn-accent" onClick={handleLeroySearch}>🔎 Buscar</button>
+              <button type="button" className="btn btn-accent" onClick={handleLeroySearch}>🔎 Buscar</button>
             </div>
             <div className="stack">
               {leroyResults.map((item) => (
-                <button key={item.sku} className="history-item" onClick={() => useLeroyProduct(item)}>
+                <button type="button" key={item.sku} className="history-item" onClick={() => useLeroyProduct(item)}>
                   <strong>{item.nome}</strong>
                   <span>{item.marca} • R$ {item.preco.toFixed(2)} • SKU {item.sku}</span>
                 </button>
@@ -160,8 +160,8 @@ export function Cadastros() {
         <div className="card soft">
           <h3>🛠 Cadastro de Serviços</h3>
           <div className="row">
-            <button className={`btn ${sinapiMode === 'manual' ? 'btn-primary' : ''}`} onClick={() => setSinapiMode('manual')}>Cadastro Manual</button>
-            <button className={`btn ${sinapiMode === 'sinapi' ? 'btn-primary' : ''}`} onClick={() => setSinapiMode('sinapi')}>Buscar SINAPI</button>
+            <button type="button" className={`btn ${sinapiMode === 'manual' ? 'btn-primary' : ''}`} onClick={() => setSinapiMode('manual')}>Cadastro Manual</button>
+            <button type="button" className={`btn ${sinapiMode === 'sinapi' ? 'btn-primary' : ''}`} onClick={() => setSinapiMode('sinapi')}>Buscar SINAPI</button>
           </div>
 
           {sinapiMode === 'manual' ? (
@@ -182,12 +182,12 @@ export function Cadastros() {
                   <option value="pintura">Pintura</option>
                   <option value="impermeabilizacao">Impermeabilização</option>
                 </select>
-                <button className="btn btn-accent" onClick={handleSinapiSearch}>🔎 Buscar</button>
+                <button type="button" className="btn btn-accent" onClick={handleSinapiSearch}>🔎 Buscar</button>
               </div>
               {sinapiCacheInfo ? <p className="muted">{sinapiCacheInfo}</p> : null}
               <div className="stack">
                 {sinapiResults.map((item) => (
-                  <button key={`${item.codigo}-${item.descricao}`} className="history-item" onClick={() => useSinapiService(item)}>
+                  <button type="button" key={`${item.codigo}-${item.descricao}`} className="history-item" onClick={() => useSinapiService(item)}>
                     <strong>[SINAPI {item.codigo}] {item.descricao}</strong>
                     <span>{item.categoria} • R$ {item.preco.toFixed(2)} / {item.unidade} • fonte: {item.fonte}</span>
                   </button>
