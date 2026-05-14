@@ -2,7 +2,7 @@
 
 ## Agora — Fundação
 
-- Concluir auditoria técnica inicial.
+- Evoluir o shell inicial do OrçaMaster sem acoplar dados mockados à regra de negócio.
 - Confirmar origem de dados no Manus AI e Firebase.
 - Criar fluxo de trabalho com Issue → Codex → PR → revisão → merge.
 - Adicionar CI e padronização de código em PR separado.

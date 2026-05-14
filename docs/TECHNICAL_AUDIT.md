@@ -8,9 +8,9 @@ O objetivo é registrar o estado atual antes de novas refatorações, para que o
 
 ## Visão geral do projeto
 
-O repositório contém uma base web Vite + React + TypeScript. O nome técnico no `package.json` ainda está como `paint-budget-pro`, enquanto o contexto do produto informado pelo solicitante é **OrçaMaster**.
+O repositório contém uma base web Vite + React + TypeScript. O nome técnico do pacote foi alinhado para `orcamaster` neste início de recriação, mantendo o escopo limitado ao shell inicial e documentação.
 
-A aplicação disponível no checkout atual é mínima: possui ponto de entrada React, tela inicial simples, estilos globais e componentes básicos. Não há, no código versionado atual, implementação completa de clientes, faturas, recibos, autenticação, painel financeiro, PDF profissional, Firebase fallback ou integração Manus AI.
+A aplicação disponível no checkout atual possui ponto de entrada React, shell visual inicial, navegação lateral, KPIs e listas mockadas de clientes/orçamentos. Não há, no código versionado atual, implementação completa persistida de clientes, faturas, recibos, autenticação, painel financeiro real, PDF profissional, Firebase fallback ou integração Manus AI.
 
 ## Tecnologias usadas
 
@@ -108,7 +108,7 @@ Nenhuma integração remota está ativa no código analisado. As integrações e
 ## Problemas críticos
 
 1. **Ausência do produto funcional completo no checkout atual.** Os módulos centrais do OrçaMaster não estão presentes de forma implementada e testável.
-2. **Nome técnico inconsistente.** O package ainda usa `paint-budget-pro`, enquanto o produto esperado é OrçaMaster.
+2. **Dados ainda mockados.** O shell inicial ajuda a guiar UI e módulos, mas não deve ser tratado como produto persistido.
 3. **Sem documentação operacional de dados reais.** Não há mapeamento confirmado de Manus AI, Firebase, Supabase, regras de migração ou rotina de backup.
 4. **Sem autenticação e isolamento multiempresa.** Isso impede uso seguro em produção.
 5. **Sem CI.** PRs ainda não são validados automaticamente por GitHub Actions.
@@ -171,7 +171,7 @@ As dependências Supabase, React Query, Dexie, jsPDF, QR Code, Router e Recharts
 
 ### P0 — Antes de mexer em funcionalidade
 
-1. Confirmar o repositório canônico e alinhar nome técnico (`paint-budget-pro` vs `OrçaMaster`).
+1. Confirmar o repositório canônico e a origem real de dados.
 2. Documentar origem real de dados no Manus AI e espelho Firebase sem expor credenciais.
 3. Criar Issue de auditoria e manter PRs pequenos.
 4. Adicionar CI mínimo em PR separado: typecheck, testes e build.

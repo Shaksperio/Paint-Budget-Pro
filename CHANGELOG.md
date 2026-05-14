@@ -2,6 +2,13 @@
 
 Todas as mudanças relevantes deste projeto devem ser documentadas aqui.
 
+## 0.2.0 - Início da recriação do app
+
+- Alinhado o nome técnico do pacote para `orcamaster`.
+- Substituída a tela mínima por um shell inicial com sidebar, dashboard, KPIs, clientes e orçamentos mockados.
+- Adicionados dados de domínio mockados para orientar os próximos módulos sem conectar persistência real.
+- Atualizado o título HTML para OrçaMaster.
+
 ## 0.1.1 - Auditoria inicial do OrçaMaster
 
 - Reorganizada a documentação técnica em `docs/`.

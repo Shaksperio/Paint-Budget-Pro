@@ -2,16 +2,15 @@
 
 OrçaMaster é um aplicativo planejado para orçamento, fatura, recibo, clientes, produtos/serviços e gestão financeira. O objetivo deste repositório é migrar o projeto para um fluxo profissional com GitHub + Codex, preservar funcionalidades existentes, documentar a arquitetura e evoluir por Pull Requests pequenos.
 
-> **Nota de auditoria:** o checkout disponível neste ambiente ainda usa o nome técnico `paint-budget-pro` no `package.json`. A renomeação deve ser feita em PR separado, depois de confirmar o repositório canônico e evitar que a mudança de nome se misture com a auditoria inicial.
-
 ## Estado atual
 
 Este PR documenta o estado inicial encontrado no checkout atual:
 
-- Base web Vite + React + TypeScript.
+- Base web Vite + React + TypeScript com shell inicial do OrçaMaster.
 - Scripts de desenvolvimento, typecheck, teste e build já declarados.
 - Dependências declaradas para Supabase, Dexie, PDF, QR Code, rotas e gráficos.
-- Sem módulos completos de clientes, faturas, recibos, autenticação, Firebase fallback ou dashboard financeiro no código analisado.
+- Dashboard operacional inicial com dados mockados para clientes e orçamentos; ainda sem persistência real.
+- Sem módulos completos de faturas, recibos, autenticação, Firebase fallback ou dashboard financeiro conectado a dados reais.
 - Sem migrations/regras de banco versionadas no checkout atual.
 - Sem GitHub Actions, lint ou format configurados no checkout atual.
 
@@ -64,10 +63,10 @@ Nunca commite `.env`, tokens, chaves privadas, exports com dados reais de client
 
 ## Próximos PRs sugeridos
 
-1. Organização de pastas.
+1. Organização de pastas por módulos reais.
 2. Configuração de ambiente, lint, format e CI.
-3. Autenticação.
-4. Clientes.
+3. Rotas e layout autenticado.
+4. Clientes com CRUD e camada de serviços.
 5. Produtos e serviços.
 6. Orçamentos.
 7. Faturas.

@@ -1,61 +1,142 @@
 import { Badge } from './components/Badge';
+import { Button } from './components/Button';
 import { Card } from './components/Card';
-import { calculateBudgetTotals } from './lib/calculations';
+import {
+  clients,
+  dashboardMetrics,
+  estimates,
+  statusLabels,
+  type DocumentStatus,
+} from './lib/orcamasterData';
 
-const sampleItems = [
-  { description: 'Preparação de superfície', quantity: 48, unitPrice: 8.5 },
-  { description: 'Pintura acrílica premium', quantity: 48, unitPrice: 18.75 },
-  { description: 'Impermeabilização de área externa', quantity: 16, unitPrice: 42 },
-];
-
-const totals = calculateBudgetTotals(sampleItems, 0.05, 0.03);
 const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+const statusTone: Record<DocumentStatus, 'success' | 'warning' | 'info' | 'danger' | 'neutral'> = {
+  accepted: 'success',
+  draft: 'neutral',
+  overdue: 'danger',
+  paid: 'success',
+  sent: 'info',
+};
+
+const navigationItems = [
+  'Dashboard',
+  'Clientes',
+  'Produtos e serviços',
+  'Orçamentos',
+  'Faturas',
+  'Recibos',
+  'Relatórios',
+  'Configurações',
+];
 
 function App() {
   return (
-    <main className="app-shell">
-      <header className="hero">
-        <div>
-          <Badge tone="success">Build base restaurado</Badge>
-          <h1>Paint Budget Pro</h1>
-          <p>
-            Base React + TypeScript preparada para evoluir módulos de clientes, produtos,
-            orçamentos, PDFs e sincronização Supabase com PRs pequenos e revisáveis.
-          </p>
+    <div className="orcamaster-app">
+      <aside className="sidebar" aria-label="Navegação principal">
+        <div className="brand">
+          <span className="brand__mark">OM</span>
+          <div>
+            <strong>OrçaMaster</strong>
+            <small>Gestão financeira</small>
+          </div>
         </div>
-      </header>
 
-      <section className="grid">
-        <Card title="Prioridade imediata">
-          <ul className="check-list">
-            <li>Documentação técnica versionada</li>
-            <li>Configuração de ambiente segura</li>
-            <li>Build, typecheck e teste automatizado funcionando</li>
-          </ul>
-        </Card>
+        <nav className="sidebar__nav">
+          {navigationItems.map((item) => (
+            <a className={item === 'Dashboard' ? 'is-active' : ''} href={`#${item}`} key={item}>
+              {item}
+            </a>
+          ))}
+        </nav>
 
-        <Card title="Exemplo de cálculo">
-          <dl className="totals">
-            <div>
-              <dt>Subtotal</dt>
-              <dd>{currency.format(totals.subtotal)}</dd>
+        <div className="sidebar__status">
+          <Badge tone="success">Base local ativa</Badge>
+          <p>Firebase fallback e autenticação serão conectados nos próximos PRs.</p>
+        </div>
+      </aside>
+
+      <main className="workspace">
+        <header className="topbar">
+          <div>
+            <Badge tone="info">Recriação iniciada</Badge>
+            <h1>Dashboard operacional</h1>
+            <p>
+              Primeiro shell do OrçaMaster com navegação, KPIs, clientes e orçamentos simulados
+              para guiar a reconstrução dos módulos reais.
+            </p>
+          </div>
+          <div className="topbar__actions">
+            <Button variant="secondary">Importar dados</Button>
+            <Button>Novo orçamento</Button>
+          </div>
+        </header>
+
+        <section className="metrics-grid" aria-label="Indicadores principais">
+          {dashboardMetrics.map((metric) => (
+            <Card className="metric-card" eyebrow={metric.helper} key={metric.label} title={metric.label}>
+              <strong>{metric.value}</strong>
+              <span>{metric.trend}</span>
+            </Card>
+          ))}
+        </section>
+
+        <section className="content-grid">
+          <Card className="panel panel--wide" eyebrow="Pipeline comercial" title="Orçamentos recentes">
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Número</th>
+                    <th>Cliente</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th>Validade</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {estimates.map((estimate) => (
+                    <tr key={estimate.id}>
+                      <td>{estimate.number}</td>
+                      <td>{estimate.clientName}</td>
+                      <td>
+                        <Badge tone={statusTone[estimate.status]}>{statusLabels[estimate.status]}</Badge>
+                      </td>
+                      <td>{currency.format(estimate.total)}</td>
+                      <td>{new Date(estimate.validUntil).toLocaleDateString('pt-BR')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <div>
-              <dt>Desconto</dt>
-              <dd>{currency.format(totals.discount)}</dd>
+          </Card>
+
+          <Card className="panel" eyebrow="CRM inicial" title="Clientes prioritários">
+            <div className="client-list">
+              {clients.map((client) => (
+                <article className="client-list__item" key={client.id}>
+                  <div>
+                    <strong>{client.name}</strong>
+                    <span>{client.city}</span>
+                  </div>
+                  <small>{client.contact}</small>
+                </article>
+              ))}
             </div>
-            <div>
-              <dt>Impostos</dt>
-              <dd>{currency.format(totals.tax)}</dd>
-            </div>
-            <div className="totals__highlight">
-              <dt>Total</dt>
-              <dd>{currency.format(totals.total)}</dd>
-            </div>
-          </dl>
-        </Card>
-      </section>
-    </main>
+          </Card>
+        </section>
+
+        <section className="next-steps">
+          <Card eyebrow="Próximo PR" title="Sequência recomendada">
+            <ol className="timeline">
+              <li>Conectar rotas reais e layout autenticado.</li>
+              <li>Criar camada de serviços para dados locais/Firebase.</li>
+              <li>Implementar CRUD de clientes preservando testes e build.</li>
+            </ol>
+          </Card>
+        </section>
+      </main>
+    </div>
   );
 }
 

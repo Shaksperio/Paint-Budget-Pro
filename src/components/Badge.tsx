@@ -1,6 +1,6 @@
 type BadgeProps = {
   children: string;
-  tone?: 'success' | 'warning' | 'info';
+  tone?: 'success' | 'warning' | 'info' | 'danger' | 'neutral';
 };
 
 export function Badge({ children, tone = 'info' }: BadgeProps) {
