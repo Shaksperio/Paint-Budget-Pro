@@ -1,73 +1,80 @@
-# Paint Budget Pro (React + TypeScript)
+# OrçaMaster
 
-Aplicativo SPA para orçamento de pintura/impermeabilização com interface mobile-first, cadastros completos e sincronização com Supabase.
+OrçaMaster é um aplicativo planejado para orçamento, fatura, recibo, clientes, produtos/serviços e gestão financeira. O objetivo deste repositório é migrar o projeto para um fluxo profissional com GitHub + Codex, preservar funcionalidades existentes, documentar a arquitetura e evoluir por Pull Requests pequenos.
 
-## O que foi implementado
+## Estado atual
 
-- Dashboard com métricas e gráficos.
-- Fluxo de orçamento com histórico, QR Code e exportação PDF.
-- Cadastros por módulos:
-  - Produtos
-  - Serviços (manual + busca SINAPI de referência local)
-  - Profissionais
-- Configurações com seletor de tema, QR do último orçamento e gerenciamento de dados.
-- Persistência local (IndexedDB via Dexie).
-- Sincronização remota com Supabase para orçamentos, produtos, serviços e profissionais.
+Este PR documenta o estado inicial encontrado no checkout atual:
 
-## Supabase
+- Base web Vite + React + TypeScript com shell inicial do OrçaMaster.
+- Scripts de desenvolvimento, typecheck, teste e build já declarados.
+- Dependências declaradas para Supabase, Dexie, PDF, QR Code, rotas e gráficos.
+- Dashboard operacional inicial com dados mockados para clientes e orçamentos; ainda sem persistência real.
+- Sem módulos completos de faturas, recibos, autenticação, Firebase fallback ou dashboard financeiro conectado a dados reais.
+- Sem migrations/regras de banco versionadas no checkout atual.
+- Sem GitHub Actions, lint ou format configurados no checkout atual.
 
-Este projeto está configurado para o projeto:
-
-- Project name: `supabase-coral-fence`
-- Project ID: `jnabeytsbxefzrnflwad`
-- URL: `https://jnabeytsbxefzrnflwad.supabase.co`
-
-As variáveis públicas usadas no front-end são:
-
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_PUBLISHABLE_KEY`
-
-> ⚠️ **Não use `sb_secret_*` no front-end.** A chave secreta deve ficar apenas em backend/edge functions.
-
-### Configuração local
-
-1. Copie `.env.example` para `.env`.
-2. Ajuste valores se necessário.
-3. Execute o app.
-
-As tabelas esperadas no banco são:
-
-- `budgets`
-- `products`
-- `services`
-- `professionals`
-
-> Se as tabelas não existirem ou RLS bloquear escrita, o app continua salvando localmente e mostra feedback de erro de sincronização.
-
-## Como executar
+## Como executar localmente
 
 ```bash
 npm install
+cp .env.example .env
 npm run dev
 ```
 
-
-## Buscadores externos implementados
-
-- `supabase/functions/search-leroy/index.ts`: busca produtos na API da Leroy com fallback para catálogo simulado.
-- `supabase/functions/search-sinapi/index.ts`: busca serviços SINAPI via Firecrawl (quando disponível), com fallback para base interna de referência.
-- `src/lib/search/externalSearch.ts`: integração do frontend com as Edge Functions e cache local (TTL de 30 minutos) para resultados de preços.
-
-### Testar busca SINAPI
-
-1. Abra **Cadastros → Serviços → Buscar SINAPI**.
-2. Busque por termos como `pintura`, `selador` ou `manta`.
-3. O app exibirá se veio de cache, busca remota ou fallback interno.
-
-## Testes
+## Scripts disponíveis
 
 ```bash
-npm run test
-npm run check
-npm run build
+npm run check   # TypeScript sem emissão de arquivos
+npm run test    # Testes unitários com Vitest
+npm run build   # Typecheck e build Vite de produção
+npm run preview # Preview local do build
 ```
+
+## Variáveis de ambiente
+
+Copie `.env.example` para `.env` e preencha apenas valores do seu ambiente local.
+
+| Variável | Uso | Observação |
+| --- | --- | --- |
+| `VITE_SUPABASE_URL` | URL pública do projeto Supabase, caso Supabase seja usado no frontend. | Pode ser exposta ao browser. |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Chave pública/publishable para o cliente web. | Nunca usar chave secreta no frontend. |
+| `FIRECRAWL_API_KEY` | Busca externa em backend/edge function, se existir. | Não deve ser usada diretamente no frontend. |
+
+Nunca commite `.env`, tokens, chaves privadas, exports com dados reais de clientes ou credenciais do Manus AI/Firebase/Supabase.
+
+## Documentação do PR 1
+
+- [`docs/TECHNICAL_AUDIT.md`](./docs/TECHNICAL_AUDIT.md): auditoria técnica inicial, problemas críticos, riscos e recomendações.
+- [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md): arquitetura observada e arquitetura-alvo proposta.
+- [`docs/DATABASE_SCHEMA.md`](./docs/DATABASE_SCHEMA.md): modelo de dados alvo para orientar a migração.
+- [`docs/MIGRATION_PLAN.md`](./docs/MIGRATION_PLAN.md): fases e sequência de PRs pequenos.
+- [`docs/ROADMAP.md`](./docs/ROADMAP.md): roadmap de produto e operação.
+- [`docs/DESIGN_SYSTEM.md`](./docs/DESIGN_SYSTEM.md): diretrizes iniciais de design system, sem implementação funcional neste PR.
+- [`CHANGELOG.md`](./CHANGELOG.md): histórico de mudanças documentadas.
+
+## Fluxo de trabalho recomendado
+
+1. Abrir uma Issue com o objetivo e escopo.
+2. Executar uma tarefa pequena com Codex.
+3. Abrir Pull Request revisável.
+4. Rodar checks e revisar o diff.
+5. Fazer merge somente após aprovação.
+
+## Próximos PRs sugeridos
+
+1. Organização de pastas por módulos reais.
+2. Configuração de ambiente, lint, format e CI.
+3. Rotas e layout autenticado.
+4. Clientes com CRUD e camada de serviços.
+5. Produtos e serviços.
+6. Orçamentos.
+7. Faturas.
+8. Recibos.
+9. Geração de PDF.
+10. Dashboard financeiro.
+11. Firebase sync/fallback.
+12. Design system.
+13. Responsividade mobile.
+14. Segurança e regras de banco.
+15. Deploy.
